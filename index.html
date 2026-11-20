@@ -48,6 +48,7 @@ h1.wort span{display:block}
 .vorjahr{font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1;letter-spacing:-.01em;margin:4px 0 -2px}
 .d-ord2{right:calc(var(--stern) * -.45);top:660px}
 @media (max-width:640px){.d-ord2{left:auto;right:calc(var(--stern) * -.3);top:46%}}
+.karte .gross{font-size:clamp(18px,2.2vw,22px);line-height:1.4;margin:0}
 .forms-wrap{background:transparent;margin:0 -8px;overflow:hidden;min-width:0}
 .forms-wrap iframe{display:block;width:100%;height:560px;border:0}
 @media (max-width:640px){.forms-wrap iframe{height:640px}}
@@ -395,8 +396,8 @@ function renderWeb3Card(f, r, y){
     h += `<div class="eyebrow">Anmeldung ${y}</div>`;
     if (done) {
       h += `<h2>Du bist dabei, ${esc(done.name)}!</h2>
-        <p class="note">Am ${esc(fmtDate(opensAt(r)))} wird ausgelost. Dann bekommst du den Namen, den du malst, per E-Mail an ${esc(done.email)}.</p>
-        <button class="sekundaer" id="nochEine">Weitere Person anmelden</button>`;
+        <p class="gross">Am ${esc(opensAt(r).toLocaleDateString('de-CH', { day:'numeric', month:'long' }))} bekommst du eine E-Mail mit dem Namen, den du malst.</p>
+        ${done.fertig ? '' : '<button class="sekundaer" id="fertigBtn">Fertig</button>'}`;
     } else {
       h += `<h2>Machst du dieses Jahr mit?</h2>
         <label>Name<input type="text" id="signName" maxlength="40" autocomplete="name" value="${esc(S.me)}"></label>
@@ -525,7 +526,7 @@ document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   const y = curYear();
   if (t.id === 'web3Btn') return act(sendeAnmeldung);
-  if (t.id === 'nochEine') { store.del('anm_' + y); S.msg = ''; render(); return; }
+  if (t.id === 'fertigBtn') { const d = store.get('anm_' + y) || {}; d.fertig = true; store.set('anm_' + y, d); render(); const rg = document.querySelector('.regeln'); if (rg) rg.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); return; }
   if (t.id === 'mailNochmal') { const v = store.get('mail_' + y) || {}; S.me = v.name || ''; S.mail = v.email || ''; store.del('mail_' + y); render(); return; }
   if (t.id === 'kopierBtn') { const done = ok => { t.textContent = ok ? 'Kopiert' : ANMELDE_MAIL; }; try { navigator.clipboard.writeText(ANMELDE_MAIL).then(() => done(true), () => done(false)); } catch { done(false); } return; }
   if (t.id === 'doSign') return act(async () => {
