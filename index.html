@@ -397,7 +397,7 @@ function renderWeb3Card(f, r, y){
     if (done) {
       h += `<h2>Du bist dabei, ${esc(done.name)}!</h2>
         <p class="gross">Am ${esc(opensAt(r).toLocaleDateString('de-CH', { day:'numeric', month:'long' }))} bekommst du eine E-Mail mit dem Namen, den du malst.</p>
-        ${done.fertig ? '' : '<button class="sekundaer" id="fertigBtn">Fertig</button>'}`;
+        <div class="row">${done.fertig ? '' : '<button class="primaer" id="fertigBtn">Fertig</button>'}<button class="sekundaer" id="zumFormular">Zurück zum Anmeldeformular</button></div>`;
     } else {
       h += `<h2>Machst du dieses Jahr mit?</h2>
         <label>Name<input type="text" id="signName" maxlength="40" autocomplete="name" value="${esc(S.me)}"></label>
@@ -526,6 +526,7 @@ document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   const y = curYear();
   if (t.id === 'web3Btn') return act(sendeAnmeldung);
+  if (t.id === 'zumFormular') { store.del('anm_' + y); S.msg = ''; render(); const n = $('signName'); if (n) n.focus(); return; }
   if (t.id === 'fertigBtn') { const d = store.get('anm_' + y) || {}; d.fertig = true; store.set('anm_' + y, d); render(); const rg = document.querySelector('.regeln'); if (rg) rg.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); return; }
   if (t.id === 'mailNochmal') { const v = store.get('mail_' + y) || {}; S.me = v.name || ''; S.mail = v.email || ''; store.del('mail_' + y); render(); return; }
   if (t.id === 'kopierBtn') { const done = ok => { t.textContent = ok ? 'Kopiert' : ANMELDE_MAIL; }; try { navigator.clipboard.writeText(ANMELDE_MAIL).then(() => done(true), () => done(false)); } catch { done(false); } return; }
