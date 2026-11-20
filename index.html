@@ -397,7 +397,7 @@ function renderWeb3Card(f, r, y){
     if (done) {
       h += `<h2>Du bist dabei, ${esc(done.name)}!</h2>
         <p class="gross">Am ${esc(opensAt(r).toLocaleDateString('de-CH', { day:'numeric', month:'long' }))} bekommst du eine E-Mail mit dem Namen, den du malst.</p>
-        <div class="row">${done.fertig ? '' : '<button class="primaer" id="fertigBtn">Fertig</button>'}<button class="sekundaer" id="zumFormular">Zurück zum Anmeldeformular</button></div>`;
+        <button class="sekundaer" id="zumFormular">Zurück zum Anmeldeformular</button>`;
     } else {
       h += `<h2>Machst du dieses Jahr mit?</h2>
         <label>Name<input type="text" id="signName" maxlength="40" autocomplete="name" value="${esc(S.me)}"></label>
