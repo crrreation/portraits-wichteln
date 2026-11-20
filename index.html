@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Portraits Wichteln</title>
+<style>
+@font-face{font-family:"Jost";src:url("fonts/Jost-Light.woff2") format("woff2");font-weight:300;font-display:swap}
+@font-face{font-family:"Jost";src:url("fonts/Jost-Bold.woff2") format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Europa GX";src:local("Europa Light"),local("Europa-Light"),url("fonts/Europa-Light.woff2") format("woff2"),url("fonts/Europa-Light.otf") format("opentype");font-weight:300;font-display:swap}
+@font-face{font-family:"Europa GX";src:local("Europa Bold"),local("Europa-Bold"),url("fonts/Europa-Bold.woff2") format("woff2"),url("fonts/Europa-Bold.otf") format("opentype");font-weight:700;font-display:swap}
+/* Layout (Figma «Portrait Wichteln Tool»): light paper page, red hero, yellow draw card, year folders that open into a black-framed gallery. Single committed light look. */
+:root{
+  color-scheme:light;
+  --papier:#F7F5F0; --tinte:#111214; --grau:#A4A6AE; --label:#4A4142;
+  --violet:#B384D3; --gelb:#FFC933; --blau:#72C7F9; --rot:#F67858; --gruen:#84D160; --braun:#C4A277;
+  --stern:clamp(80px,15vw,166px);
+  --europa:"Europa GX","Europa","Jost","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{overflow-x:clip}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{background:var(--papier);color:var(--tinte);font-family:var(--europa);overflow-x:clip;font-weight:300;font-size:15px;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+.caps{font-weight:700;letter-spacing:.02em}
+.eyebrow{font-weight:700;font-size:12px;line-height:1.25;opacity:.75}
+.note{font-size:13px;line-height:1.5;opacity:.8;margin:0}
+h2,h3{margin:0}
+
+/* hero */
+.hero{position:relative;background:var(--rot);border-radius:6px;padding:16px clamp(14px,2.6vw,28px) 20px;display:grid;gap:14px;overflow:hidden}
+.hero .kopf{font-weight:700;font-size:11px;line-height:1.25}
+.schritte{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;font-weight:700;font-size:11px;line-height:1.25}
+.schritte span:last-child{text-align:right}
+h1.wort{font-weight:700;font-size:clamp(46px,11.9vw,131px);line-height:.86;letter-spacing:-.01em;margin:0;position:relative;z-index:1}
+h1.wort span{display:block}
+.hero .stern{position:absolute;width:var(--stern);left:48.2%;top:clamp(40px,8.4vw,92px);z-index:2}
+.band{background:var(--tinte);color:var(--rot);border-radius:3px;padding:4px 10px;text-align:center;font-weight:700;font-size:clamp(14px,2vw,22px);line-height:1.2;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.hero .stern{top:6px;left:auto;right:8px}.schritte span:last-child{text-align:left}}
+.buehne{position:relative}
+.deko{position:absolute;z-index:6;display:block;width:var(--stern)}
+.deko,.hero .stern{cursor:grab;translate:var(--dx,0) var(--dy,0);transition:translate .55s cubic-bezier(.2,1.4,.4,1);touch-action:manipulation}
+.deko.zurueck,.hero .stern.zurueck{transition:translate 1.6s cubic-bezier(.3,.7,.2,1)}
+.deko svg,.hero .stern svg{display:block;width:100%;height:auto;overflow:visible;shape-rendering:geometricPrecision;will-change:transform;backface-visibility:hidden;animation:drehen var(--dauer,30s) linear infinite;animation-direction:var(--richtung,normal)}
+@keyframes drehen{to{transform:rotate(360deg)}}
+
+@media (prefers-reduced-motion:reduce){.deko svg,.hero .stern svg{animation:none}}
+.vorjahr{font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1;letter-spacing:-.01em;margin:4px 0 -2px}
+.d-ord2{right:calc(var(--stern) * -.45);top:660px}
+@media (max-width:640px){.d-ord2{left:auto;right:calc(var(--stern) * -.3);top:46%}}
+.regeln{background:var(--blau);border-radius:6px;padding:24px;display:grid;gap:16px}
+.regeln h2{font-weight:700;font-size:clamp(30px,5vw,55px);line-height:1.05;letter-spacing:-.01em;margin:0}
+.regel-liste{list-style:none;margin:0;padding:0;display:grid;max-width:820px}
+.regel-liste li{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:6px 24px;padding:14px 0;border-top:1px dotted var(--tinte);min-width:0}
+.regel-liste li:last-child{border-bottom:1px dotted var(--tinte)}
+.regel-liste b{font-weight:700;font-size:18px;line-height:1.3}
+.regel-liste span{font-size:16px;line-height:1.5}
+@media (max-width:640px){.regel-liste li{grid-template-columns:1fr}}
+.status{font-weight:700;letter-spacing:.02em}
+
+/* draw card */
+.karte{background:var(--gelb);border-radius:6px;padding:24px;display:grid;gap:16px;box-shadow:0 10px 0 -2px rgba(0,0,0,.35);transform:rotate(.11deg);min-width:0}
+.karte h2{font-weight:700;font-size:clamp(30px,5vw,55px);line-height:1.05;letter-spacing:-.01em;text-wrap:balance}
+.count{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.count span{background:var(--tinte);border-radius:3px;padding:12px 4px 8px;display:grid;justify-items:center;gap:2px}
+.count span:nth-child(odd){transform:rotate(.8deg)} .count span:nth-child(even){transform:rotate(-1.2deg)}
+.count b{font-weight:700;font-size:clamp(32px,5vw,54px);line-height:1;color:var(--gelb);font-variant-numeric:tabular-nums}
+.count i{font-style:normal;font-weight:700;font-size:12px;line-height:1.25;color:var(--papier)}
+.result{text-align:center;display:grid;gap:8px;padding:10px 0}
+.result .name{font-weight:700;font-size:clamp(46px,8vw,86px);line-height:.95;letter-spacing:-.01em;word-break:break-word}
+.result .name.spin{opacity:.45}
+.topf{border-top:2px solid var(--tinte);padding-top:14px;display:grid;gap:10px}
+.meter{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:2px;background:rgba(17,18,20,.18);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--tinte);width:0;transition:width .5s}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-weight:700;font-size:13px;line-height:1.3;padding:3px 10px;border-radius:2px;background:var(--tinte);color:var(--papier)}
+.chips .chip:nth-child(4n+2){transform:rotate(-2deg)} .chips .chip:nth-child(4n+3){transform:rotate(1.5deg)}
+.chip.gone,.chip.open{background:transparent;color:var(--tinte);border:1.5px dashed var(--tinte);transform:none}
+.chip.gone{text-decoration:line-through;opacity:.6}
+.chip button{all:unset;cursor:pointer;margin-left:6px}
+label{display:grid;gap:6px;font-weight:700;font-size:12px}
+input,select,textarea{font:300 15px var(--europa);color:var(--tinte);background:var(--papier);border:2px solid var(--tinte);border-radius:3px;padding:9px 12px;width:100%}
+button{font:700 15px var(--europa);border-radius:3px;padding:10px 18px;border:2px solid var(--tinte);background:var(--tinte);color:var(--papier);cursor:pointer;justify-self:start}
+button.primaer{color:var(--gelb)}
+button.primaer::before{content:"\2192\00a0\00a0"} button.primaer::after{content:"\00a0\00a0\2190"}
+button.sekundaer{background:transparent;color:var(--tinte)}
+a.btn{justify-self:start;font:700 15px var(--europa);border-radius:3px;padding:10px 18px;border:2px solid var(--tinte);background:var(--tinte);color:var(--papier);text-decoration:none;display:inline-block}
+a.btn.primaer{color:var(--gelb)} a.btn.primaer::before{content:"\2192\00a0\00a0"} a.btn.primaer::after{content:"\00a0\00a0\2190"}
+a.btn.sekundaer{background:transparent;color:var(--tinte)}
+button.kopier{padding:2px 8px;font-size:12px;border-width:1.5px;vertical-align:baseline}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--blau);outline-offset:3px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.confirm{background:var(--papier);border:2px solid var(--tinte);border-radius:3px;padding:14px;display:grid;gap:10px;transform:rotate(.8deg)}
+.msg{margin:0;font-size:14px}
+.msg.err,.msg.ok{justify-self:start;background:var(--tinte);padding:6px 10px;border-radius:3px;font-weight:700}
+.msg.err{color:var(--rot)} .msg.ok{color:var(--gruen)}
+
+/* folders */
+.ordner{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:43px;row-gap:0;padding-top:10px}
+@media (max-width:640px){.ordner{grid-template-columns:1fr}}
+.folder{all:unset;box-sizing:border-box;position:relative;display:block;width:100%;aspect-ratio:542/461;container-type:inline-size;cursor:pointer;
+  filter:drop-shadow(0 7.97px 9.57px rgba(13,13,13,.02)) drop-shadow(0 33.5px 16.7px rgba(13,13,13,.02)) drop-shadow(0 76.5px 23px rgba(13,13,13,.01))}
+.folder:focus-visible{outline:3px solid var(--blau);outline-offset:6px;border-radius:12px}
+.folder .back{position:absolute;left:0;top:11.55%;width:100%;height:88.38%;display:block}
+.folder .files{position:absolute;inset:0}
+.pol{position:absolute;width:35.3%;background:#000;padding:1.39cqw 1.39cqw 1.95cqw;display:grid;gap:1.39cqw;transition:transform .35s ease}
+.pol .bild{height:38.2cqw;background:var(--grau);display:grid;place-items:center;overflow:hidden;font-weight:700;font-size:1.67cqw}
+.pol .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.pol .tag{justify-self:start;font-weight:700;letter-spacing:.02em;font-size:2.36cqw;line-height:1.2;padding:.28cqw 1.11cqw;transform:rotate(-1.5deg);white-space:nowrap}
+.pol .sub{color:var(--papier);opacity:.7;font-size:1.81cqw;line-height:1.5;white-space:nowrap}
+.pol.p1{left:52.6%;top:31.3%;transform:rotate(-9.89deg);z-index:1}
+.pol.p2{left:29.9%;top:28.6%;transform:rotate(8.33deg);z-index:2}
+.pol.p3{left:9%;top:31.3%;transform:rotate(-3.5deg);z-index:3}
+.folder .glas{position:absolute;left:0;bottom:0;width:100%;height:68.47%;transform-origin:50% 100%;transform:rotateX(-26deg);transition:transform .35s ease;z-index:4}
+.folder .glas .blur{position:absolute;inset:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);clip-path:url(#glasClip)}
+.folder .glas img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.folder .label{position:absolute;left:6.59%;top:78.84%;z-index:5;font-weight:700;color:var(--tinte);font-size:9.49cqw;line-height:1;letter-spacing:.019em;white-space:nowrap}
+.folder:hover .glas,.folder[aria-expanded="true"] .glas{transform:rotateX(-40deg)}
+.folder:hover .pol.p1,.folder[aria-expanded="true"] .pol.p1{transform:translateY(-6%) rotate(-12deg)}
+.folder:hover .pol.p2,.folder[aria-expanded="true"] .pol.p2{transform:translateY(-9%) rotate(9deg)}
+.folder:hover .pol.p3,.folder[aria-expanded="true"] .pol.p3{transform:translateY(-5%) rotate(-5deg)}
+
+/* gallery */
+.galerie{grid-column:1/-1;display:grid;gap:18px;padding:6px 0 48px}
+.galerie h2{font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1;letter-spacing:-.01em}
+.galerie h2 span{color:var(--gelb)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:35px 25px;padding-top:8px}
+.foto{margin:0;background:#000;padding:9.8px 9.8px 13.7px;display:grid;gap:9.8px;min-width:0}
+.grid .foto:nth-child(3n+1){transform:rotate(1.6deg)} .grid .foto:nth-child(3n+2){transform:rotate(-1.2deg)} .grid .foto:nth-child(3n){transform:rotate(.4deg)}
+.foto .bild{aspect-ratio:229/269.5;background:var(--grau);display:grid;place-items:center;overflow:hidden;font-weight:700;font-size:12px}
+.foto .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.foto .tag{justify-self:start;color:var(--tinte);font-weight:700;letter-spacing:.02em;font-size:16.7px;line-height:1.2;padding:2px 7.8px;transform:rotate(-1.5deg)}
+.leer{border:1.5px dashed var(--tinte);border-radius:6px;padding:28px;text-align:center;display:grid;gap:6px;justify-items:center}
+
+/* admin */
+details.admin{background:var(--papier);border:2px solid var(--tinte);border-radius:6px;padding:16px 20px}
+details.admin summary{cursor:pointer;font-weight:700;letter-spacing:.02em}
+.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-top:16px}
+.adm-grid > div{display:grid;gap:10px;align-content:start;min-width:0}
+.adm-grid .chip{background:var(--tinte)}
+.adm-people{display:grid;gap:4px;font-size:13px;max-height:320px;overflow:auto}
+.adm-people div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(17,18,20,.15);padding:4px 0;min-width:0}
+.adm-people span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-people button{padding:0 8px;font-size:13px;border-width:1.5px}
+.setup{background:var(--rot);border-radius:6px;padding:18px 20px;display:grid;gap:8px}
+.setup code{background:var(--tinte);color:var(--papier);padding:2px 6px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="sternForm" viewBox="0 0 167 167"><path d="M68.4703 14.5538L89.1171 64.5537L124.001 19.9258L99.08 71.0237L151.494 68.4703L102.573 87.4566L146.123 124.001L96.1029 97.4195L97.578 151.494L76.9312 101.495L42.0476 146.123L66.9683 95.0246L14.5538 97.578L63.4754 78.5917L19.9258 42.0476L69.9454 68.6288L68.4703 14.5538Z" stroke="#111214" stroke-width="22" stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill"/></symbol><clipPath id="glasClip" clipPathUnits="objectBoundingBox"><path d="M 0.00350 0.11557 C 0.00350 0.05505 0.03226 0.00598 0.06774 0.00598 H 0.34802 C 0.42393 0.00598 0.42977 0.16539 0.50568 0.16539 H 0.93195 C 0.96742 0.16539 0.99618 0.21446 0.99618 0.27499 V 0.88274 C 0.99618 0.94327 0.96742 0.99234 0.93195 0.99234 H 0.06774 C 0.03226 0.99234 0.00350 0.94327 0.00350 0.88274 V 0.11557 Z"/></clipPath></defs></svg>
+<div class="wrap">
+  <header class="hero">
+    <div class="kopf">Creation Team<br>Digitec Galaxus</div>
+    <div class="schritte"><span>Anmelden</span><span>Los per E-Mail</span><span>Malen &amp; enthüllen</span><span id="status">Verbinde …</span></div>
+    <h1 class="wort"><span>Portraits</span><span>Wichteln <span id="heroJahr" style="display:inline"></span></span></h1>
+    <span class="stern" style="--dauer:40s" aria-hidden="true"><svg viewBox="0 0 167 167" width="167" height="167" style="fill:var(--gelb)"><use href="#sternForm"/></svg></span>
+    <div class="band" id="heroCta">→ Jede Person malt ein Portrait ←</div>
+  </header>
+
+
+  <div class="setup" id="setup" hidden>
+    <h3 class="caps">Fast fertig</h3>
+    <p class="msg">Trage in <code>index.html</code> bei <code>API_URL</code> die Web-App-Adresse deines Google-Apps-Script ein. Die Anleitung steht im README.</p>
+  </div>
+
+  <div class="buehne">
+    <span class="deko d-karte" style="right:calc(var(--stern) * -.5);bottom:calc(var(--stern) * -.5);--dauer:30s;--richtung:normal" aria-hidden="true"><svg viewBox="0 0 167 167" width="167" height="167" style="fill:var(--braun)"><use href="#sternForm"/></svg></span>
+    <section class="karte" id="drawFrame" hidden></section>
+  </div>
+  <section class="regeln" aria-labelledby="regelnTitel">
+    <div class="eyebrow">Bevor es losgeht</div>
+    <h2 id="regelnTitel">Spielregeln</h2>
+    <ul class="regel-liste">
+      <li><b>Bis 8. Januar 2027</b><span>Ihr habt bis zum 8. Januar 2027 Zeit, ein oder mehrere Portraits für euren Wichtel zu gestalten.</span></li>
+      <li><b>Heimlich übergeben</b><span>Übergebt eure Portraits heimlich, damit die beschenkte Person nicht weiss, von wem sie sind.</span></li>
+      <li><b>Querwichteln erlaubt</b><span>Ihr dürft auch querwichteln, also zusätzliche Portraits an Personen verschenken, die ihr nicht gezogen habt.</span></li>
+      <li><b>Alles ist erlaubt</b><span>Zeichnung, Collage oder mit KI erstellt: Alles ist erlaubt. Selbst gestaltete Werke ohne KI werden natürlich besonders geschätzt.</span></li>
+    </ul>
+  </section>
+
+  <div class="buehne">
+    <h2 class="vorjahr">Galerie der Vorjahre</h2>
+    <span class="deko d-ord1" style="left:calc(var(--stern) * -.27);top:calc(var(--stern) * .32);--dauer:28s;--richtung:reverse" aria-hidden="true"><svg viewBox="0 0 167 167" width="167" height="167" style="fill:var(--violet)"><use href="#sternForm"/></svg></span>
+    <span class="deko d-ord2" style="--dauer:36s;--richtung:normal" aria-hidden="true"><svg viewBox="0 0 167 167" width="167" height="167" style="fill:var(--rot)"><use href="#sternForm"/></svg></span>
+    <section class="ordner" id="ordner" aria-label="Portraits nach Jahr"></section>
+  </div>
+
+  <details class="admin" id="admin" hidden>
+    <summary>Verwaltung</summary>
+    <div id="admLogin" class="adm-grid">
+      <div>
+        <label>Verwaltungs-Passwort<input type="password" id="admPw" autocomplete="current-password"></label>
+        <button id="admLoginBtn">Entsperren</button>
+      </div>
+    </div>
+    <div id="admPanel" class="adm-grid" hidden>
+      <div>
+        <h3 class="caps">Runde anlegen</h3>
+        <label>Jahr<input type="number" id="admYear" min="2000" max="2100"></label>
+        <label>Auslosung und E-Mail-Versand am<input type="datetime-local" id="admOpens"></label>
+        <button id="admSave">Runde speichern</button>
+        <p class="note">Bis zu diesem Zeitpunkt läuft die Anmeldung. Danach lost das System automatisch aus und schickt jeder Person ihren Namen per E-Mail (innerhalb von 15 Minuten).</p>
+      </div>
+      <div>
+        <h3 class="caps">Anmeldungen</h3>
+        <p class="note" id="admInfo"></p>
+        <div id="admPeople" class="adm-people"></div>
+        <button class="primaer" id="admDraw">Jetzt auslosen und senden</button>
+        <button class="sekundaer" id="admResend">E-Mails erneut senden</button>
+        <button class="sekundaer" id="admReset">Runde zurücksetzen</button>
+        <div class="confirm" id="admConfirm" hidden>
+          <p class="msg" id="admConfirmText"></p>
+          <div class="row"><button class="primaer" id="admYes">Bestätigen</button><button class="sekundaer" id="admNo">Abbrechen</button></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="caps">Galerie pflegen</h3>
+        <p class="note">Portraits legst du im Ordner <b>bilder/</b> ab und trägst sie in <b>gallery.json</b> ein. Ein Jahresordner zeigt Portraits, sobald Einträge für das Jahr existieren.</p>
+      </div>
+    </div>
+    <p class="msg" id="admMsg"></p>
+  </details>
+</div>
+
+<script>
+// ===== Einstellung: Web-App-Adresse aus Google Apps Script (siehe README) =====
+const API_URL = '';
+// ===== Anmeldung per E-Mail (ohne Server): an diese Adresse gehen die Anmeldungen =====
+const ANMELDE_MAIL = 'maggie.blaser@digitecgalaxus.ch';
+const RUNDE = { year: 2026, opensAt: '2026-12-01T00:00:00+01:00' };
+// ============================================================================
+
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(k){ try { return JSON.parse(localStorage.getItem('pw_' + k)); } catch { return null; } },
+                set(k,v){ try { localStorage.setItem('pw_' + k, JSON.stringify(v)); } catch {} },
+                del(k){ try { localStorage.removeItem('pw_' + k); } catch {} } };
+const nowYear = new Date().getFullYear();
+const BACK = 'M0.797058 84.6805C0.797058 66.4808 16.4991 51.7263 35.8676 51.7263H233.538C271.797 51.7263 274.985 0.797058 316.432 0.797058H507.726C527.095 0.797058 542.797 15.5516 542.797 33.7513V375.277C542.797 393.477 527.095 408.231 507.726 408.231H35.8676C16.4991 408.231 0.797058 393.477 0.797058 375.277V84.6805Z';
+const FOLDER_COLORS = ['var(--gruen)', 'var(--blau)', 'var(--violet)', 'var(--gelb)', 'var(--rot)', 'var(--braun)'];
+const TAG_COLORS = ['var(--violet)', 'var(--gelb)', 'var(--blau)', 'var(--rot)', 'var(--gruen)'];
+const S = { rounds:{}, gallery:[], open:null, loaded:false, offline:false, busy:false, msg:'', msgType:'', me:'', mail:'', admList:null,
+            pw: (() => { try { return sessionStorage.getItem('pw_admin') || ''; } catch { return ''; } })(), admin:false, admAction:null };
+
+async function api(req){
+  const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(req) });
+  const j = await res.json();
+  if (j.data) { S.rounds = j.data.rounds || {}; S.offline = false; }
+  if (!j.ok) throw new Error(j.error || 'Etwas hat nicht geklappt.');
+  return j.result;
+}
+async function refresh(){
+  if (!API_URL) return;
+  try { const res = await fetch(API_URL); const j = await res.json(); S.rounds = (j.data && j.data.rounds) || {}; S.offline = false; }
+  catch { S.offline = true; }
+  S.loaded = true; render();
+}
+
+const curYear = () => { const ys = Object.keys(S.rounds).map(Number).sort((a,b) => b - a); return ys[0] ?? null; };
+const round = () => S.rounds[curYear()] || null;
+const opensAt = r => r && r.opensAt ? new Date(r.opensAt) : null;
+const isLocked = r => { const o = opensAt(r); return !!(o && o.getTime() > Date.now()); };
+const fmtDate = d => d.toLocaleDateString('de-CH', { day:'numeric', month:'long', year:'numeric' }) + (d.getHours() || d.getMinutes() ? ', ' + d.toLocaleTimeString('de-CH', { hour:'2-digit', minute:'2-digit' }) + ' Uhr' : '');
+const parts = ms => { ms = Math.max(0, ms); const s = Math.floor(ms/1000); return [Math.floor(s/86400), Math.floor(s%86400/3600), Math.floor(s%3600/60), s%60]; };
+const p2 = n => String(n).padStart(2,'0');
+const countHtml = iso => { const [d,h,m,s] = parts(new Date(iso) - Date.now()); return `<span><b>${d}</b><i>${d===1?'Tag':'Tage'}</i></span><span><b>${p2(h)}</b><i>Std</i></span><span><b>${p2(m)}</b><i>Min</i></span><span><b>${p2(s)}</b><i>Sek</i></span>`; };
+const countText = iso => { const [d,h,m,s] = parts(new Date(iso) - Date.now()); return `${d} T ${p2(h)}:${p2(m)}:${p2(s)}`; };
+const toLocalInput = iso => { const d = new Date(iso); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+const gen = n => /[sßxz]$/i.test(String(n).trim()) ? String(n).trim() + '’' : String(n).trim() + 's';
+const same = (a,b) => String(a).toLowerCase() === String(b).toLowerCase();
+
+function years(){
+  const set = new Set(Object.keys(S.rounds).map(Number));
+  S.gallery.forEach(g => set.add(Number(g.year)));
+  if (!set.size) set.add(nowYear);
+  return [...set].filter(Boolean).sort((a,b) => b - a);
+}
+
+function renderHero(){
+  const r = round();
+  $('heroJahr').textContent = curYear() ?? nowYear;
+  const el = $('heroCta');
+  if (r && isLocked(r)) el.textContent = `→ Ziehung am ${opensAt(r).toLocaleDateString('de-CH', { day:'numeric', month:'long' })} ←`;
+  else if (r && r.phase === 'done') el.textContent = '→ Die Lose sind verschickt ←';
+  else if (r && r.phase === 'mail') el.textContent = '→ Die Lose werden per E-Mail verschickt ←';
+  else if (r && r.phase === 'signup') el.textContent = '→ Die Anmeldung ist offen ←';
+  else el.textContent = '→ Jede Person malt ein Portrait ←';
+  $('status').textContent = !API_URL ? (ANMELDE_MAIL ? '' : 'Nicht verbunden') : S.offline ? 'Offline' : S.loaded ? '● Live' : 'Verbinde …';
+}
+
+function msgHtml(){ return S.msg ? `<p class="msg ${S.msgType}">${esc(S.msg)}</p>` : ''; }
+const chipList = (list, cls) => list.map(n => `<span class="chip ${typeof cls === 'function' ? cls(n) : cls || ''}">${esc(n)}</span>`).join('');
+
+function renderCard(){
+  const f = $('drawFrame'); const r = round(); const y = curYear();
+  const live = API_URL || ANMELDE_MAIL;
+  if (!live || !S.loaded) { f.hidden = !live; if (live) f.innerHTML = '<div class="eyebrow">Lädt</div><p class="note">Die Runde wird geladen …</p>'; return; }
+  if (!r) { f.hidden = true; return; }
+  f.hidden = false;
+  if (r.phase === 'mail') return renderMailCard(f, r, y);
+  const mine = store.get('me_' + y);
+  const isIn = mine && r.signups.some(n => same(n, mine.name));
+  const people = `<div class="topf"><div class="meter"><span>Angemeldet</span><span>${r.signups.length} ${r.signups.length === 1 ? 'Person' : 'Personen'}</span></div>
+    <div class="chips">${r.signups.length ? chipList(r.signups) : '<span class="note">Noch niemand. Sei die erste Person.</span>'}</div></div>`;
+  let h = '';
+  if (r.phase === 'signup' && isLocked(r)) {
+    h += `<div class="eyebrow">Anmeldung ${y}</div>`;
+    if (isIn) {
+      h += `<h2>${esc(mine.name)}, du bist dabei</h2>
+        <p class="note">Am ${esc(fmtDate(opensAt(r)))} wird ausgelost. Du bekommst dann eine E-Mail an <b>${esc(mine.email)}</b> mit dem Namen, den du malst.</p>
+        <button class="sekundaer" id="unSign" ${S.busy ? 'disabled' : ''}>Abmelden</button>`;
+    } else {
+      h += `<h2>Machst du dieses Jahr mit?</h2>
+        <label>Dein Name<input type="text" id="signName" maxlength="40" autocomplete="name" placeholder="z. B. Maggie" value="${esc(S.me)}"></label>
+        <label>Deine E-Mail-Adresse<input type="email" id="signMail" maxlength="120" autocomplete="email" inputmode="email" placeholder="name@beispiel.ch" value="${esc(S.mail)}"></label>
+        <button class="primaer" id="doSign" ${S.busy ? 'disabled' : ''}>Ich mache mit</button>
+        <p class="note">Schreib deinen Namen so, wie ihn das Team kennt. Am ${esc(fmtDate(opensAt(r)))} wird ausgelost, und du bekommst den Namen, den du malst, per E-Mail. Deine Adresse sieht niemand sonst auf dieser Seite.</p>`;
+    }
+    h += `<div class="count" data-countdown="${esc(r.opensAt)}" role="timer" aria-label="Zeit bis zur Auslosung">${countHtml(r.opensAt)}</div>`;
+    h += msgHtml() + people;
+  } else if (r.phase === 'signup') {
+    h += `<div class="eyebrow">Auslosung ${y}</div><h2>Die Lose werden gerade verschickt</h2>
+      <p class="note">Die Anmeldung ist geschlossen. In den nächsten Minuten bekommt jede angemeldete Person eine E-Mail mit dem Namen, den sie malt.</p>` + msgHtml() + people;
+  } else {
+    h += `<div class="eyebrow">Auslosung ${y}</div><h2>Die Lose sind verschickt</h2>
+      <p class="note">${isIn ? `${esc(mine.name)}, schau in dein Postfach (${esc(mine.email)}). ` : ''}Alle ${r.signups.length} Teilnehmenden haben ihren Namen per E-Mail bekommen. Keine Mail erhalten? Schau im Spam-Ordner nach oder melde dich bei der Verwaltung.</p>` + msgHtml() + people;
+  }
+  f.innerHTML = h;
+}
+
+function mailLinks(name, email, y){
+  const subject = `Anmeldung Portraits Wichteln ${y}`;
+  const body = `Hallo\n\nich mache beim Portraits Wichteln ${y} mit.\n\nName: ${name}\nE-Mail: ${email}\n\nDanke!`;
+  const q = `subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return { mailto: `mailto:${ANMELDE_MAIL}?${q}`, subject };
+}
+const mailOk = m => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(m).trim());
+
+function renderMailCard(f, r, y){
+  let done = store.get('mail_' + y); if (!done || typeof done !== 'object') done = null;
+  let h = '';
+  if (isLocked(r)) {
+    h += `<div class="eyebrow">Anmeldung ${y}</div>`;
+    if (done) {
+      h += `<h2>Fast geschafft, ${esc(done.name)}!</h2>
+        <p class="note">Schick die E-Mail ab, die sich gerade geöffnet hat. Dann bist du dabei, und am ${esc(fmtDate(opensAt(r)))} kommt dein Name an ${esc(done.email)}.</p>
+        <p class="note">Hat sich kein E-Mail-Programm geöffnet? Schreib an ${esc(ANMELDE_MAIL)} <button type="button" class="sekundaer kopier" id="kopierBtn">Adresse kopieren</button> mit deinem Namen und deiner E-Mail-Adresse.</p>
+        <button class="sekundaer" id="mailNochmal">Angaben ändern</button>`;
+    } else {
+      h += `<h2>Machst du dieses Jahr mit?</h2>
+        <label>Name<input type="text" id="signName" maxlength="40" autocomplete="name" value="${esc(S.me)}"></label>
+        <label>E-Mail<input type="email" id="signMail" maxlength="120" autocomplete="email" inputmode="email" value="${esc(S.mail)}"></label>
+        <a class="btn primaer" id="mailBtn" href="#">Anmelden</a>`;
+    }
+    h += msgHtml();
+    h += `<div class="count" data-countdown="${esc(r.opensAt)}" role="timer" aria-label="Zeit bis zur Auslosung">${countHtml(r.opensAt)}</div>`;
+    f.innerHTML = h; updateMailLinks(); return;
+  }
+  h += `<div class="eyebrow">Auslosung ${y}</div><h2>Die Lose sind unterwegs</h2>
+    <p class="note">${done ? esc(done.name) + ', schau' : 'Schau'} in dein Postfach: Alle Angemeldeten bekommen den Namen, den sie malen, per E-Mail. Keine Mail erhalten? Schau im Spam-Ordner nach.</p>`;
+  f.innerHTML = h + msgHtml();
+}
+
+function updateMailLinks(){
+  const a = $('mailBtn'); if (!a) return;
+  a.href = mailLinks(S.me.trim(), S.mail.trim(), curYear()).mailto;
+}
+
+function polHtml(g, i, small){
+  const tagBg = TAG_COLORS[i % TAG_COLORS.length];
+  const bild = g && g.bild ? `<img src="${esc(g.bild)}" alt="" loading="lazy" onerror="this.replaceWith('Portrait')">` : 'Portrait';
+  const rec = g ? esc(g.receiver) : '…';
+  const cap = g ? `${esc(gen(g.receiver))} Portrait ${esc(g.year)}` : '';
+  if (small) return `<div class="pol p${i + 1}" aria-hidden="true"><div class="bild">${bild}</div><span class="tag" style="background:${tagBg}">${cap}</span></div>`;
+  return `<figure class="foto"><div class="bild">${g.bild ? `<img src="${esc(g.bild)}" alt="${cap}" loading="lazy" onerror="this.replaceWith('Portrait')">` : 'Portrait'}</div><figcaption class="tag" style="background:${tagBg}">${cap}</figcaption></figure>`;
+}
+
+function ordered(y){
+  // gemischt, aber Portraits derselben Person bleiben zusammen; pro Jahr immer dieselbe Reihenfolge
+  const groups = new Map();
+  S.gallery.filter(g => Number(g.year) === y).forEach(g => { const k = String(g.receiver).trim().toLowerCase(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(g); });
+  const keys = [...groups.keys()].sort();
+  let seed = (y * 9301 + 49297) % 233280;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let i = keys.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [keys[i], keys[j]] = [keys[j], keys[i]]; }
+  return keys.flatMap(k => groups.get(k));
+}
+
+function renderFolders(){
+  const ys = years();
+  const cols = matchMedia('(max-width:640px)').matches ? 1 : 2;
+  const items = ys.map((y, i) => {
+    const pics = ordered(y);
+    const color = FOLDER_COLORS[i % FOLDER_COLORS.length];
+    return `<button type="button" class="folder" data-year="${y}" aria-expanded="${S.open === y}" aria-label="Portraits ${y} ${S.open === y ? 'schliessen' : 'öffnen'}">
+      <svg class="back" viewBox="0 0 544 410" preserveAspectRatio="none" aria-hidden="true"><path d="${BACK}" fill="${color}" stroke="${color}" stroke-width="1.59"/></svg>
+      <div class="files">${pics.filter((g, k, arr) => arr.findIndex(x => String(x.receiver).toLowerCase() === String(g.receiver).toLowerCase()) === k).slice(0, 3).map((g, k) => polHtml(g, k, true)).join('')}</div>
+      <div class="glas" aria-hidden="true"><div class="blur"></div><img src="assets/ordner-glas.svg" width="546" height="320" alt=""></div>
+      <span class="label">Portraits ${y}</span>
+    </button>`;
+  });
+  const openIdx = ys.indexOf(S.open);
+  if (openIdx >= 0) {
+    const y = S.open; const r = S.rounds[y];
+    const pics = ordered(y);
+    const body = pics.length
+      ? `<div class="grid">${pics.map((g, k) => polHtml(g, k, false)).join('')}</div>`
+      : `<div class="leer"><h3 class="caps">${r ? 'Noch verhüllt' : 'Noch leer'}</h3><p class="note">${r ? 'Die Portraits erscheinen hier nach der Enthüllung.' : `Für ${y} hängen noch keine Portraits.`}</p></div>`;
+    const gal = `<section class="galerie" aria-label="Portraits aus dem Jahr ${y}"><h2>Portraits aus dem Jahr <span>${y}</span></h2>${body}</section>`;
+    const after = Math.min(items.length - 1, Math.floor(openIdx / cols) * cols + cols - 1);
+    items.splice(after + 1, 0, gal);
+  }
+  $('ordner').innerHTML = items.join('');
+}
+
+function renderAdmin(){
+  const show = location.hash === '#verwaltung' && !!API_URL;
+  $('admin').hidden = !show; if (!show) return;
+  $('admin').open = true;
+  $('admLogin').hidden = S.admin; $('admPanel').hidden = !S.admin;
+  if (!S.admin) return;
+  const y = curYear(); const r = round();
+  if (!$('admYear').value) $('admYear').value = y || nowYear;
+  if (!$('admOpens').value) $('admOpens').value = r && r.opensAt ? toLocalInput(r.opensAt) : `${$('admYear').value}-12-01T00:00`;
+  const done = r && r.phase === 'done';
+  const L = S.admList;
+  $('admInfo').textContent = !r ? 'Noch keine Runde angelegt.'
+    : done ? `${y}: Ausgelost${L && L.sentAt ? ' am ' + fmtDate(new Date(L.sentAt)) : ''}. ${r.signups.length} Personen.${L && L.errors && L.errors.length ? ' Probleme: ' + L.errors.join('; ') : ''}`
+    : `${y}: ${r.signups.length} angemeldet. Auslosung am ${fmtDate(opensAt(r))}.${L && L.errors && L.errors.length ? ' Hinweis: ' + L.errors.join('; ') : ''}`;
+  $('admPeople').innerHTML = L ? L.people.map(p => `<div><span><b>${esc(p.name)}</b> · ${esc(p.email)}</span>${done ? '' : `<button type="button" class="sekundaer" data-rm="${esc(p.name)}" aria-label="${esc(p.name)} entfernen">×</button>`}</div>`).join('') : '';
+  $('admDraw').hidden = !r || done; $('admResend').hidden = !done; $('admReset').hidden = !done;
+}
+
+async function loadAdminList(){
+  const y = curYear(); if (!S.admin || !y || !S.rounds[y]) { S.admList = null; return; }
+  try { S.admList = await api({ action:'admin_list', password:S.pw, year:y }); } catch { S.admList = null; }
+}
+
+function render(){ renderHero(); renderCard(); renderFolders(); renderAdmin(); $('setup').hidden = !!(API_URL || ANMELDE_MAIL); }
+
+async function act(fn){
+  if (S.busy) return; S.busy = true; S.msg = ''; render();
+  try { await fn(); } catch (e) { S.msg = e.message || 'Keine Verbindung. Bitte nochmals versuchen.'; S.msgType = 'err'; }
+  S.busy = false; render();
+}
+
+document.addEventListener('click', e => {
+  const ml = e.target.closest('#mailBtn');
+  if (ml) {
+    if (!S.me.trim()) { e.preventDefault(); S.msg = 'Bitte gib deinen Namen ein.'; S.msgType = 'err'; render(); return; }
+    if (!mailOk(S.mail)) { e.preventDefault(); S.msg = 'Bitte gib eine gültige E-Mail-Adresse ein.'; S.msgType = 'err'; render(); return; }
+    updateMailLinks();
+    const y0 = curYear(); const v = { name: S.me.trim(), email: S.mail.trim().toLowerCase() };
+    setTimeout(() => { store.set('mail_' + y0, v); S.msg = ''; render(); }, 400); return;
+  }
+  const fo = e.target.closest('.folder');
+  if (fo) { const y = Number(fo.dataset.year); S.open = S.open === y ? null : y; render(); const g = document.querySelector('.galerie'); if (g && S.open) g.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' }); return; }
+  const t = e.target.closest('button'); if (!t) return;
+  const y = curYear();
+  if (t.id === 'mailNochmal') { const v = store.get('mail_' + y) || {}; S.me = v.name || ''; S.mail = v.email || ''; store.del('mail_' + y); render(); return; }
+  if (t.id === 'kopierBtn') { const done = ok => { t.textContent = ok ? 'Kopiert' : ANMELDE_MAIL; }; try { navigator.clipboard.writeText(ANMELDE_MAIL).then(() => done(true), () => done(false)); } catch { done(false); } return; }
+  if (t.id === 'doSign') return act(async () => {
+    const name = ($('signName').value || '').trim(); const email = ($('signMail').value || '').trim();
+    if (!name) throw new Error('Bitte gib deinen Namen ein.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new Error('Bitte gib eine gültige E-Mail-Adresse ein.');
+    const res = await api({ action:'signup', year:y, name, email });
+    store.set('me_' + y, { name: res.name, email: email.toLowerCase() }); S.me = ''; S.mail = ''; S.msg = 'Du bist angemeldet.'; S.msgType = 'ok';
+  });
+  if (t.id === 'unSign') return act(async () => {
+    const m = store.get('me_' + y) || {};
+    await api({ action:'withdraw', year:y, name: m.name, email: m.email });
+    store.del('me_' + y); S.msg = 'Du bist abgemeldet.'; S.msgType = 'ok';
+  });
+  if (t.id === 'admLoginBtn') return act(async () => {
+    S.pw = $('admPw').value;
+    await api({ action:'admin_check', password:S.pw });
+    S.admin = true; try { sessionStorage.setItem('pw_admin', S.pw); } catch {}
+    await loadAdminList();
+  });
+  if (t.id === 'admSave') return act(async () => {
+    const yy = Number($('admYear').value); const ov = $('admOpens').value;
+    await api({ action:'admin_round', password:S.pw, year:yy, opensAt: ov ? new Date(ov).toISOString() : '' });
+    $('admMsg').textContent = `Runde ${yy} gespeichert.`;
+    await loadAdminList();
+  });
+  if (t.dataset.rm) return act(async () => { await api({ action:'admin_remove', password:S.pw, year:y, name:t.dataset.rm }); await loadAdminList(); });
+  if (t.id === 'admDraw' || t.id === 'admResend' || t.id === 'admReset') {
+    const r = round(); S.admAction = { admDraw:'admin_draw_now', admResend:'admin_resend', admReset:'admin_reset' }[t.id];
+    $('admConfirmText').textContent = S.admAction === 'admin_draw_now'
+      ? `Jetzt sofort auslosen und ${r.signups.length} E-Mails verschicken? Danach ist keine Anmeldung mehr möglich.`
+      : S.admAction === 'admin_resend' ? 'Alle Teilnehmenden bekommen ihre E-Mail noch einmal (mit demselben Namen).'
+      : 'Die Auslosung wird gelöscht und die Anmeldung öffnet wieder. Bereits verschickte E-Mails lassen sich nicht zurückholen. Fortfahren?';
+    $('admConfirm').hidden = false; return;
+  }
+  if (t.id === 'admNo') { $('admConfirm').hidden = true; return; }
+  if (t.id === 'admYes') { $('admConfirm').hidden = true; return act(async () => { const res = await api({ action:S.admAction, password:S.pw, year:y }); $('admMsg').textContent = S.admAction === 'admin_reset' ? 'Zurückgesetzt.' : `${res.sent} E-Mails verschickt.${res.errors && res.errors.length ? ' Probleme: ' + res.errors.join('; ') : ''}`; await loadAdminList(); }); }
+});
+document.addEventListener('input', e => { if (e.target.id === 'signName') { S.me = e.target.value; if (S.msg) { S.msg = ''; const m = document.querySelector('#drawFrame .msg'); if (m) m.remove(); } updateMailLinks(); } if (e.target.id === 'signMail') { S.mail = e.target.value; if (S.msg) { S.msg = ''; const m = document.querySelector('#drawFrame .msg'); if (m) m.remove(); } updateMailLinks(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.target.id === 'signName' || e.target.id === 'signMail')) { e.preventDefault(); const b = $('doSign') || $('mailBtn'); if (b) b.click(); } });
+addEventListener('hashchange', render);
+matchMedia('(max-width:640px)').addEventListener('change', renderFolders);
+
+// Sterne weichen dem Mauszeiger aus
+document.querySelectorAll('.deko, .hero .stern').forEach(el => {
+  let t;
+  const flee = e => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const r = el.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    let dx = cx - e.clientX, dy = cy - e.clientY; const len = Math.hypot(dx, dy) || 1;
+    const dist = 70 + Math.random() * 40;
+    el.classList.remove('zurueck');
+    el.style.setProperty('--dx', (dx / len * dist).toFixed(1) + 'px'); el.style.setProperty('--dy', (dy / len * dist).toFixed(1) + 'px');
+    clearTimeout(t); t = setTimeout(() => { el.classList.add('zurueck'); el.style.setProperty('--dx', '0px'); el.style.setProperty('--dy', '0px'); }, 1400);
+  };
+  el.addEventListener('pointerenter', flee);
+  el.addEventListener('pointerdown', flee);
+});
+
+setInterval(() => {
+  let ended = false;
+  document.querySelectorAll('[data-countdown]').forEach(el => { if (new Date(el.dataset.countdown) <= Date.now()) ended = true; else el.innerHTML = countHtml(el.dataset.countdown); });
+  document.querySelectorAll('[data-countdown-text]').forEach(el => { if (new Date(el.dataset.countdownText) <= Date.now()) ended = true; else el.textContent = countText(el.dataset.countdownText); });
+  if (ended) render();
+}, 1000);
+
+render();
+fetch('gallery.json', { cache:'no-store' }).then(r => r.ok ? r.json() : []).then(g => { S.gallery = Array.isArray(g) ? g : []; render(); }).catch(() => {});
+if (API_URL) {
+  if (S.pw) api({ action:'admin_check', password:S.pw }).then(async () => { S.admin = true; await loadAdminList(); render(); }).catch(() => {});
+  refresh();
+  setInterval(() => { if (!document.hidden && !S.busy && !document.activeElement?.matches('input,select')) refresh(); }, 15000);
+} else {
+  if (ANMELDE_MAIL) S.rounds = { [RUNDE.year]: { year: RUNDE.year, phase: 'mail', opensAt: new Date(RUNDE.opensAt).toISOString(), signups: [] } };
+  S.loaded = true; render();
+}
+})();
+</script>
+</body>
+</html>
