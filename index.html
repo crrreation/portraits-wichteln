@@ -52,14 +52,14 @@ h1.wort span{display:block}
 .forms-wrap{background:transparent;margin:0 -8px;overflow:hidden;min-width:0}
 .forms-wrap iframe{display:block;width:100%;height:560px;border:0}
 @media (max-width:640px){.forms-wrap iframe{height:640px}}
-.regeln{background:var(--blau);border-radius:6px;padding:24px;display:grid;gap:16px}
-.regeln h2{font-weight:700;font-size:clamp(30px,5vw,55px);line-height:1.05;letter-spacing:-.01em;margin:0}
-.regel-liste{list-style:none;margin:0;padding:0;display:grid;max-width:820px}
-.regel-liste li{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:6px 24px;padding:14px 0;border-top:1px dotted var(--tinte);min-width:0}
+.regeln{background:var(--blau);border-radius:6px;padding:clamp(18px,3vw,32px);display:grid;gap:clamp(12px,2vw,18px);min-width:0}
+.regeln h2{font-weight:700;font-size:clamp(32px,6vw,64px);line-height:1;letter-spacing:-.01em;margin:0}
+.regel-liste{list-style:none;margin:0;padding:0;display:grid;width:100%}
+.regel-liste li{display:grid;grid-template-columns:minmax(0,clamp(180px,26%,300px)) minmax(0,1fr);gap:6px clamp(16px,3vw,40px);padding:clamp(12px,1.8vw,18px) 0;border-top:1px dotted var(--tinte);min-width:0}
 .regel-liste li:last-child{border-bottom:1px dotted var(--tinte)}
-.regel-liste b{font-weight:700;font-size:18px;line-height:1.3}
-.regel-liste span{font-size:16px;line-height:1.5}
-@media (max-width:640px){.regel-liste li{grid-template-columns:1fr}}
+.regel-liste b{font-weight:700;font-size:clamp(17px,1.8vw,20px);line-height:1.3}
+.regel-liste span{font-size:clamp(15px,1.6vw,18px);line-height:1.5;max-width:70ch}
+@media (max-width:720px){.regel-liste li{grid-template-columns:1fr;gap:4px}}
 .status{font-weight:700;letter-spacing:.02em}
 
 /* draw card */
